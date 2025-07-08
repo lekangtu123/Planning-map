@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>8180 Engineering Dr 3D Mapbox 示例</title>
+  <link
+    href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    rel="stylesheet"
+  />
+  <style>
+    body, html { margin:0; padding:0; height:100%; }
+    #map { width:100%; height:100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoibGVrYW5ndHUiLCJhIjoiY21jMjA0OG5pMDM0dzJucHF6bDMzbmN0NyJ9.i3abVxeRE87ojHWRwm7-bg';
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/satellite-streets-v11',
+      center: [-76.937759, 38.989697], // 8180 Engineering Dr 附近
+      zoom: 17,
+      pitch: 0,      // 取消倾斜
+      bearing: 0,    // 正北朝向
+      antialias: true
+    });
+
+    map.on('load', () => {
+       
+      // —— 1. 添加高程 (DEM) —— 
+      map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512,
+        maxzoom: 14
+      });
+      map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+
+      // —— 2. 天空层 —— 
+      map.addLayer({
+        id: 'sky',
+        type: 'sky',
+        paint: {
+          'sky-type': 'atmosphere',
+          'sky-atmosphere-sun': [0.0, 0.0],
+          'sky-atmosphere-sun-intensity': 15
+        }
+      });
+
+      const dashedLayers = map.getStyle().layers.filter(layer =>
+      layer.type === 'line' &&
+      layer.paint &&
+      layer.paint['line-dasharray']
+      );
+
+      // 针对每个图层，增强它的可见性
+      dashedLayers.forEach(layer => {
+      // 加粗线宽
+      map.setPaintProperty(layer.id, 'line-width', 4);
+      // 改成更醒目的颜色，比如纯白、亮黄都可以
+      map.setPaintProperty(layer.id, 'line-color', '#ffff00');
+      // 缩短间隔，让虚线更密集
+      map.setPaintProperty(layer.id, 'line-dasharray', [1, 2]);
+      // 可选：提高透明度
+      map.setPaintProperty(layer.id, 'line-opacity', 0.8);
+      });
+
+      // —— 3. 3D 建筑 —— 
+      map.addLayer({
+        id: '3d-buildings',
+        source: 'composite',
+        'source-layer': 'building',
+        filter: ['==', 'extrude', 'true'],
+        type: 'fill-extrusion',
+        minzoom: 15,
+        paint: {
+          'fill-extrusion-color': '#aaa',
+          'fill-extrusion-height': [
+            'interpolate', ['linear'], ['zoom'],
+            15, 0,
+            16, ['get', 'height']
+          ],
+          'fill-extrusion-base': [
+            'interpolate', ['linear'], ['zoom'],
+            15, 0,
+            16, ['get', 'min_height']
+          ],
+          'fill-extrusion-opacity': 0.6
+        }
+      });
+
+      // 在现有 DEM、建筑之后插入
+      map.addSource('walkable-ts', {
+        type: 'vector',
+        url: 'mapbox://lekangtu.7zpd5wbi'
+      });
+
+      map.addLayer({
+        id: 'walkable-fill',
+        type: 'fill',
+        source: 'walkable-ts',
+        // source-layer 要和 Tileset 里的 layer name 一致，通常在 Studio 导出后会显示
+        'source-layer': '123walkable-0h0a32',
+        paint: {
+          'fill-color': '#0000ff',
+          'fill-opacity': 0.35
+        }
+      });
+
+      // —— 4. 隐藏道路名称标签 —— 
+      const style = map.getStyle();
+      style.layers.forEach(layer => {
+        if (layer.type === 'symbol' && layer['source-layer'] === 'road_label') {
+          map.setLayoutProperty(layer.id, 'visibility', 'none');
+        }
+      });
+
+
+    });
+  </script>
+</body>
+</html>
