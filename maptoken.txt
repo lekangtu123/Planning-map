@@ -1,0 +1,7 @@
+pk.eyJ1IjoibGVrYW5ndHUiLCJhIjoiY21jMjA0OG5pMDM0dzJucHF6bDMzbmN0NyJ9.i3abVxeRE87ojHWRwm7-bg
+
+
+lekangtu.7zpd5wbi
+
+python3 -m http.server 8000
+http://localhost:8000/path.html
