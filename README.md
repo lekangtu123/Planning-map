@@ -1,1 +1,1 @@
-https://lekangtu123.github.io/Planning-map/path.html
+https://lekangtu123.github.io/Planning-map/index.html
