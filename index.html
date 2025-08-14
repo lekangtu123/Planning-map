@@ -31,9 +31,11 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoibGVrYW5ndHUiLCJhIjoiY21jMjA0OG5pMDM0dzJucHF6bDMzbmN0NyJ9.i3abVxeRE87ojHWRwm7-bg';
 
 // —— Custom bounding box and grid settings ——
-const BBOX   = { west:-76.940002, south:38.989303, east:-76.937256, north:38.991437 };
-const GRID_W = 1024, GRID_H = 1024;
-const SAFETY = 2;       // Expansion radius (cells) for walkability
+// const BBOX   = { west:-76.940002, south:38.989303, east:-76.937256, north:38.991437 };  38.989303,-76.940002   38.991437,-76.937256
+const BBOX   = { west:-76.954610, south:38.978949, east:-76.934513, north:38.999111}
+// const GRID_W = 1024, GRID_H = 1024;
+const GRID_W = 8704, GRID_H = 11264;
+const SAFETY = 0;       // Expansion radius (cells) for walkability
 
 // ----- Coordinate conversion: lon/lat <-> grid -----
 function lngLatToGrid(lng,lat){
@@ -55,7 +57,8 @@ function gridToLngLat(x,y){
 let maskGrid, grid, finder;
 
 // ---- Load binary mask grid (JSON), then expand safety margin ----
-fetch('new_mask_grid1024.json')
+// fetch('new_mask_grid1024.json')
+fetch('fixed_campus_map.json')
   .then(r=>r.ok?r.json():Promise.reject(r.status))
   .then(json=>{
     // Invert mask & apply expansion
